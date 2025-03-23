@@ -7,9 +7,10 @@ import { ProductEntity } from 'src/core/entity/product.entity';
 import { ProductService } from '../product/product.service';
 import { UserEntity } from 'src/core/entity/user.entity';
 import { FileService } from 'src/infrastructure/file/file.service';
+import { ImageEntity } from 'src/core/entity/image.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BasketEntity, ProductEntity, UserEntity])],
+  imports: [TypeOrmModule.forFeature([BasketEntity, ProductEntity, UserEntity, ImageEntity])],
   controllers: [BasketController],
   providers: [BasketService, ProductService, FileService],
 })

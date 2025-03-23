@@ -26,6 +26,26 @@ export class FileService {
     }
   }
 
+  async saveFiles(files: Express.Multer.File[]): Promise<string[]> {
+    try {
+      await fs.mkdir(this.uploadsFolder, { recursive: true });
+
+      const fileNames = await Promise.all(
+        files.map(async (file) => {
+          const fileName = `${uuidv4()}${extname(file.originalname).toLowerCase()}`;
+          const filePath = join(this.uploadsFolder, fileName);
+
+          await fs.writeFile(filePath, file.buffer);
+          return fileName;
+        })
+      );
+
+      return fileNames;
+    } catch (error) {
+      throw new BadRequestException(`Error saving files: ${error.message}`);
+    }
+  }
+
   async deleteFile(fileName: string): Promise<void> {
     try {
       const filePath = join(this.uploadsFolder, fileName);

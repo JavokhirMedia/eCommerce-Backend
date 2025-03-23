@@ -16,6 +16,7 @@ import { OrderItemModule } from './order-item/order-item.module';
 import { OrderItemEntity } from 'src/core/entity/order-item.entity';
 import { BasketModule } from './basket/basket.module';
 import { CommentModule } from './comment/comment.module';
+import { ImageEntity } from 'src/core/entity/image.entity';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { CommentModule } from './comment/comment.module';
       type: 'postgres',
       url: config.DB_URL,
       synchronize: true,
-      entities: [UserEntity, CategoryEntity, ProductEntity, BasketEntity, OrderEntity, OrderItemEntity, CommentEntity],
+      entities: [UserEntity, CategoryEntity, ProductEntity, BasketEntity, OrderEntity, OrderItemEntity, CommentEntity, ImageEntity],
       ssl: false
     }),
     AuthModule,

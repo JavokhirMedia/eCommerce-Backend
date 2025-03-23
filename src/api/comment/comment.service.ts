@@ -14,6 +14,7 @@ export class CommentService {
   constructor(
     @InjectRepository(CommentEntity)
     private readonly commentRepository: Repository<CommentEntity>,
+    
   ) { }
 
   async create(createCommentDto: CreateCommentDto, user: UserEntity, lang: string) {

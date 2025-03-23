@@ -45,8 +45,7 @@ export class UserController {
     @CurrentUser() user: UserEntity,
     @CurrentLanguage() lang: string,
   ) {
-    this.logger.log("Fetching all users");
-    return this.userService.getAllUsers(lang);
+    this.userService.getAllUsers(lang);
   }
 
   @ApiOperation({ summary: "Get all deleted users" })
@@ -56,7 +55,6 @@ export class UserController {
   @RolesDecorator(Roles.SUPER_ADMIN)
   @Get('deleted')
   async getAllDeletedUsers(@Query('lang') lang: string) {
-    this.logger.log("Fetching all deleted users");
     return this.userService.getAllDeletedUsers(lang);
   }
 
@@ -71,13 +69,7 @@ export class UserController {
     @Param("id") id: string,
     @CurrentLanguage() lang: string
   ) {
-    this.logger.log(`Fetching user with ID: ${id}`);
-    const user = await this.userService.getUserById(id, lang);
-    if (!user) {
-      this.logger.warn(`User with ID ${id} not found`);
-      throw new NotFoundException("User not found");
-    }
-    return user;
+    return await this.userService.getUserById(id, lang);
   }
 
   @Post()
@@ -153,7 +145,68 @@ export class UserController {
     @CurrentUser() currentUser: UserEntity,
     @CurrentLanguage() lang: string
   ) {
-    this.logger.log(`Soft deleting user with ID: ${id} by ${currentUser.id}`);
     return this.userService.softDeleteUser(id, currentUser, lang);
   }
+
+
+  @ApiOperation({ summary: "Get user by ID" })
+  @ApiResponse({ status: 200, description: "User profile found", type: UserEntity })
+  @ApiResponse({ status: 404, description: "User profile not found" })
+  @ApiQuery({ name: "lang", required: false, description: "Language (en, ru, uz)" })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesDecorator(Roles.SUPER_ADMIN)
+  @Get("me")
+  async getUserProfile(
+    @CurrentUser() user: UserEntity,
+    @CurrentLanguage() lang: string
+  ) {
+    return this.userService.getUserById(user.id, lang);
+  }
+
+
+  @Patch('me')
+  @UseInterceptors(FileInterceptor('avatar'))
+  @ApiOperation({ summary: 'Update user profile' })
+  @ApiResponse({ status: 200, description: 'User successfully updated' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 409, description: 'No data provided for update' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'User update payload',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'John Doe' },
+        email: { type: 'string', example: 'newemail@example.com' },
+        password: { type: 'string', example: 'NewPassword123!' },
+        role: { type: 'string', example: 'user' },
+        avatar: { type: 'string', format: 'binary' },
+      },
+      required: [],
+    },
+  })
+  async updateProfile(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() updatedBy: UserEntity,
+    @CurrentLanguage() lang: string,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.userService.updateUser(id, updateUserDto, updatedBy, lang, file);
+  }
+
+  @ApiOperation({ summary: "Soft delete profile" })
+  @ApiResponse({ status: 200, description: "User soft deleted" })
+  @ApiResponse({ status: 404, description: "User not found" })
+  @ApiQuery({ name: "lang", required: false, description: "Language (en, ru, uz)" })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesDecorator(Roles.SUPER_ADMIN)
+  @Delete("me")
+  async deleteProfile(
+    @CurrentUser() currentUser: UserEntity,
+    @CurrentLanguage() lang: string
+  ) {
+    return this.userService.softDeleteUser(currentUser.id, currentUser, lang);
+  }
+
 }

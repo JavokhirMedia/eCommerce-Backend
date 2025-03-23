@@ -8,12 +8,13 @@ import {
   Post,
   Query,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -49,7 +50,7 @@ export class ProductController {
   @Post()
   @RolesDecorator(Roles.ADMIN, Roles.USER, Roles.SUPER_ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 5)) // 5 ta faylgacha yuklash mumkin
   @UsePipes(ImageValidationPipe)
   @ApiOperation({ summary: 'Create a new product' })
   @ApiConsumes('multipart/form-data')
@@ -64,9 +65,9 @@ export class ProductController {
         stock: { type: 'number' },
         status: { type: 'string', enum: Object.values(ProductStatus) },
         categoryId: { type: 'string' },
-        file: {
-          type: 'string',
-          format: 'binary',
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' }, // Bir nechta fayl qabul qilish
         },
       },
     },
@@ -74,11 +75,11 @@ export class ProductController {
   @ApiResponse({ status: 201, description: 'Product successfully created' })
   create(
     @Body() createProductDto: CreateProductDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[], // Bir nechta faylni olish
     @CurrentUser() currentUser: UserEntity,
     @CurrentLanguage() lang: string
   ) {
-    return this.productService.create(createProductDto, file, currentUser, lang);
+    return this.productService.create(createProductDto, files, currentUser, lang);
   }
 
   // Get all products 
@@ -126,7 +127,7 @@ export class ProductController {
   @Patch(':id')
   @RolesDecorator(Roles.ADMIN, Roles.SUPER_ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 5)) // 5 ta faylgacha yuklash mumkin
   @UsePipes(ImageValidationPipe)
   @ApiOperation({ summary: 'Update an existing product' })
   @ApiConsumes('multipart/form-data')
@@ -142,9 +143,9 @@ export class ProductController {
         stock: { type: 'number' },
         status: { type: 'string', enum: Object.values(ProductStatus) },
         categoryId: { type: 'string' },
-        file: {
-          type: 'string',
-          format: 'binary',
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' }, 
         },
       },
     },
@@ -156,11 +157,11 @@ export class ProductController {
     @CurrentLanguage() lang: string,
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
-    @UploadedFile() file?: Express.Multer.File,
-
+    @UploadedFiles() files?: Express.Multer.File[], 
   ) {
-    return this.productService.update(id, updateProductDto, file, currentUser, lang);
+    return this.productService.update(id, updateProductDto, files, currentUser, lang);
   }
+
 
   // Delete product
   @Delete(':id')

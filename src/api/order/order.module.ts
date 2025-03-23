@@ -10,9 +10,10 @@ import { FileService } from 'src/infrastructure/file/file.service';
 import { UserService } from '../user/user.service';
 import { OrderItemEntity } from 'src/core/entity/order-item.entity';
 import { BasketEntity } from 'src/core/entity';
+import { ImageEntity } from 'src/core/entity/image.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, UserEntity, ProductEntity, OrderItemEntity, BasketEntity])],
+  imports: [TypeOrmModule.forFeature([OrderEntity, UserEntity, ProductEntity, OrderItemEntity, BasketEntity, ImageEntity])],
   controllers: [OrderController],
   providers: [OrderService, UserService, ProductService, FileService],
 })

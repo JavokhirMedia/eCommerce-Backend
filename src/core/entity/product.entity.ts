@@ -6,6 +6,7 @@ import { UserEntity } from './user.entity';
 import { OrderItemEntity } from './order-item.entity';
 import { CategoryEntity } from './category.entity';
 import { CommentEntity } from './comment.entity';
+import { ImageEntity } from './image.entity';
 
 @Entity('product')
 export class ProductEntity extends BaseEntity {
@@ -20,6 +21,9 @@ export class ProductEntity extends BaseEntity {
 
     @Column({ type: 'int', default: 0 })
     stock: number;
+
+    @Column({ type: 'int', default: 0 })
+    quantity: number
 
     @Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.AVAILABLE })
     status: ProductStatus;
@@ -51,4 +55,6 @@ export class ProductEntity extends BaseEntity {
     @OneToMany(() => CommentEntity, (comment) => comment.product)
     comments: CommentEntity[];
 
+    @OneToMany(() => ImageEntity, (image) => image.product, {cascade: true})
+    images: ImageEntity[]
 }
